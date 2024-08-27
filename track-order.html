@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Order</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #6db3f2, #1e3c72);
+            color: #fff;
+            text-align: center;
+        }
+        .container {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 100%;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .btn {
+            margin-top: 20px;
+        }
+        .order-details {
+            margin-top: 20px;
+            text-align: left;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .order-details h2 {
+            font-size: 22px;
+            color: #ffc107;
+        }
+        .order-details p {
+            margin: 5px 0;
+        }
+        #error-message {
+            margin-top: 20px;
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Track Your Order</h1>
+        <input type="text" id="order-number" class="form-control" placeholder="Enter your order number">
+        <button id="track-order" class="btn btn-light">Track Order</button>
+        
+        <div id="order-details" class="order-details" style="display: none;">
+            <h2>Order Details</h2>
+            <p><strong>Order Number:</strong> <span id="order-id"></span></p>
+            <p><strong>Status:</strong> <span id="order-status"></span></p>
+            <p><strong>Amount:</strong> <span id="order-amount"></span></p>
+            <p><strong>Delivery Details:</strong> <span id="order-delivery"></span></p>
+        </div>
+
+        <p id="error-message" style="display: none;">Order not found. Please check your order number and try again.</p>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#track-order').click(function() {
+                var orderNumber = $('#order-number').val();
+                if (orderNumber) {
+                    $.ajax({
+                        url: 'fetch_order_details.php',
+                        type: 'GET',
+                        data: { order_id: orderNumber },
+                        success: function(response) {
+                            var data = JSON.parse(response);
+                            if (data.error) {
+                                $('#error-message').text(data.error).show();
+                                $('#order-details').hide();
+                            } else {
+                                $('#order-id').text(data.order.id);
+                                $('#order-status').text(data.order.status);
+                                $('#order-amount').text(data.order.total);
+                                var deliveryDetails = data.delivery_details.name + ', ' + data.delivery_details.address1 + ', ' + data.delivery_details.city;
+                                $('#order-delivery').text(deliveryDetails);
+                                $('#order-details').show();
+                                $('#error-message').hide();
+                            }
+                        },
+                        error: function() {
+                            $('#error-message').text('An error occurred. Please try again.').show();
+                            $('#order-details').hide();
+                        }
+                    });
+                } else {
+                    $('#error-message').text('Please enter an order number.').show();
+                    $('#order-details').hide();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

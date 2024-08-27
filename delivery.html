@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Details</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton+SC&display=swap" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000000;
+            margin: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background: #161414;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .container h1{
+            font-family: "Anton SC", sans-serif;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        h1 {
+            color: white;
+            margin-bottom: 20px;
+            text-align: center;
+            border-bottom: 6px solid #007bff;
+            border-bottom-left-radius: 25px;
+            border-bottom-right-radius: 25px;
+            animation: color 8s ease-in infinite;
+        }
+        @keyframes color {
+            0%{
+                border-bottom: 6px solid #007bff;
+                border-bottom-left-radius: 25px;
+                border-bottom-right-radius: 25px;
+            }
+            25%{
+                border-bottom: 6px solid #cf16c0;
+                border-bottom-left-radius: 25px;
+                border-bottom-right-radius: 25px;
+            }
+            50%{
+                border-bottom: 6px solid #ff0000;
+                border-bottom-left-radius: 25px;
+                border-bottom-right-radius: 25px;
+            }
+            75%{
+                border-bottom: 6px solid #10cc20;
+                border-bottom-left-radius: 25px;
+                border-bottom-right-radius: 25px;
+            }
+            100%{
+                border-bottom: 6px solid #ff8800;
+                border-bottom-left-radius: 25px;
+                border-bottom-right-radius: 25px;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input {
+            background-color: #000000;
+            color: white;
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #7590ac;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        input:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 0.3rem rgba(38, 143, 255, 0.25);
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+        /* Styles for smaller screens */
+        @media (max-width: 576px) {
+            .container {
+                padding: 15px;
+                margin: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Delivery Details</h1>
+        <form id="deliveryForm">
+            <input type="hidden" id="orderId" value="">
+            <div class="form-group">
+                <input type="text" id="name" placeholder="Enter You Name" required>
+            </div>
+            <div class="form-group">
+                <input type="text" id="phone" placeholder="Enter You Phone" required>
+            </div>
+            <div class="form-group">
+                <input type="email" id="email" placeholder="Enter You Email" required>
+            </div>
+            <div class="form-group">
+                <input type="text" id="address1" placeholder="Enter You Address-1" required>
+            </div>
+            <div class="form-group">
+                <input type="text" id="address2" placeholder="Enter You Address-2">
+            </div>
+            <div class="form-group">
+                <input type="text" id="village" placeholder="Enter You Village Name" required>
+            </div>
+            <div class="form-group">
+                <input type="text" id="roadName" placeholder="Enter You Road Name" required>
+            </div>
+            <div class="form-group">
+                <input type="text" id="pincode" placeholder="Enter You Area PinCode Eg:523105" required>
+            </div>
+            <button type="button" id="submitDelivery">Submit Delivery Details</button>
+        </form>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('orderId');
+            document.getElementById('orderId').value = orderId;
+
+            document.getElementById('submitDelivery').addEventListener('click', function() {
+                const deliveryDetails = {
+                    name: document.getElementById('name').value,
+                    phone: document.getElementById('phone').value,
+                    email: document.getElementById('email').value,
+                    address1: document.getElementById('address1').value,
+                    address2: document.getElementById('address2').value,
+                    village: document.getElementById('village').value,
+                    roadName: document.getElementById('roadName').value,
+                    pincode: document.getElementById('pincode').value,
+                    orderId: document.getElementById('orderId').value
+                };
+
+                fetch('http://127.0.0.1:3100/submit-delivery-details', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(deliveryDetails)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = `/payment.html?orderId=${orderId}`;
+                    } else {
+                        alert('Error submitting delivery details: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    alert('Error: ' + error.message);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

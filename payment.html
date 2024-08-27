@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton+SC&display=swap" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+        .container {
+            max-width: 800px;
+        }
+        h1 {
+            text-align: center;
+            font-family: "Anton SC", sans-serif;
+            font-weight: 400;
+            font-style: normal;
+        }
+        p {
+            text-align: center;
+        }
+        .img-fluid {
+            max-width: 100%;
+            height: auto;
+        }
+        .loading-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            margin-right: 15px;
+        }
+        .loading-spinner div {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-left-color: #007bff;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .timer {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Payment</h1>
+        <p>Please scan the QR code below to complete your payment:</p>
+
+        <center>
+            <img id="paymentQRCode" src="" alt="Payment QR Code" class="img-fluid">
+        </center>
+        <center>
+            <div class="timer" id="timer"></div>
+        </center>
+        <div class="loading-container">
+            <div class="loading-spinner" id="loadingSpinner">
+                <div></div>
+            </div>
+            <div class="loading-text">Waiting for payment approval...</div>
+        </div>
+
+        <!-- Bootstrap Notification Popup -->
+        <div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="statusModalLabel">Payment Status</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" id="statusMessage">
+                        <p>Payment is Confirmed. Redirecting...</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('orderId');
+            const timerElement = document.getElementById('timer');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            let timerInterval;
+
+            if (orderId) {
+                // Start the timer
+                let timerDuration = 300; // 5 minutes in seconds
+                timerInterval = setInterval(() => {
+                    if (timerDuration <= 0) {
+                        clearInterval(timerInterval);
+                        timerElement.innerText = 'Time is up. Please try again.';
+                        loadingSpinner.style.display = 'none'; // Hide loading spinner
+                        $('#statusModal').modal('show');
+                        document.getElementById('statusMessage').innerHTML = '<p>Payment was not received in time. Please try again.</p>';
+                        setTimeout(() => {
+                            window.location.href = 'failure.html'; // Redirect to failure page
+                        }, 2000);
+                    } else {
+                        const minutes = Math.floor(timerDuration / 60);
+                        const seconds = timerDuration % 60;
+                        timerElement.innerText = `Time remaining: ${minutes}m ${seconds}s`;
+                        timerDuration--;
+                    }
+                }, 1000);
+
+                // Show loading spinner
+                loadingSpinner.style.display = 'block';
+
+                // Fetch the QR code
+                fetch(`http://localhost:3100/generate-qrcode?orderId=${orderId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const img = document.getElementById('paymentQRCode');
+                    img.src = URL.createObjectURL(blob);
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    alert('Error fetching QR code: ' + error.message);
+                });
+
+                // Connect to the SSE endpoint specific to the order ID
+                const eventSource = new EventSource(`http://localhost:3100/order-status-updates/${orderId}`);
+                eventSource.onmessage = function(event) {
+                    console.log('Received event:', event.data);
+                    if (event.data === 'success') {
+                        clearInterval(timerInterval); // Stop the timer
+                        timerElement.innerText = 'Your order has been successfully received!';
+                        loadingSpinner.style.display = 'none'; // Hide loading spinner
+                        $('#statusModal').modal('show');
+                        document.getElementById('statusMessage').innerHTML = '<p>Payment was successfully received. Redirecting...</p>';
+                        setTimeout(() => {
+                            window.location.href = 'success.html'; // Redirect to success page
+                        }, 2000);
+                    } else if (event.data === 'not received') {
+                        clearInterval(timerInterval); // Stop the timer
+                        timerElement.innerText = 'Your order has not been received.';
+                        loadingSpinner.style.display = 'none'; // Hide loading spinner
+                        $('#statusModal').modal('show');
+                        document.getElementById('statusMessage').innerHTML = '<p>Payment was not received. Please try again.</p>';
+                        setTimeout(() => {
+                            window.location.href = 'failure.html'; // Redirect to failure page
+                        }, 2000);
+                    } else {
+                        console.warn('Unexpected event data:', event.data);
+                    }
+                };
+
+                eventSource.onerror = function(error) {
+                    console.error('SSE Error:', error);
+                    alert('Error connecting to server.');
+                };
+            } else {
+                alert('Order ID is missing.');
+            }
+        });
+    </script>
+</body>
+</html>

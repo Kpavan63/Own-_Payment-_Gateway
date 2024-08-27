@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Success</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #6db3f2, #1e3c72);
+            color: #fff;
+            text-align: center;
+            margin: 0;
+        }
+        .container {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 100%;
+        }
+        .icon {
+            font-size: 80px;
+            color: #28a745;
+        }
+        h1 {
+            margin-top: 20px;
+        }
+        p {
+            font-size: 18px;
+        }
+        .btn {
+            margin-top: 20px;
+        }
+        .social-sharing {
+            margin-top: 20px;
+        }
+        .social-sharing a {
+            margin: 0 5px;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .icon {
+                font-size: 60px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+            p {
+                font-size: 16px;
+            }
+            .btn {
+                width: 100%;
+                margin-top: 10px;
+            }
+            .social-sharing {
+                margin-top: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">
+            <i class="fa fa-check-circle"></i>
+        </div>
+        <h1>Payment Successful!</h1>
+        <p>Your payment has been processed successfully. Thank you for your purchase.</p>
+        
+        <a href="index.html" class="btn btn-light">Go to Home</a>
+        <a href="track-order.html" class="btn btn-warning">Track Order</a>
+        
+        <p style="margin-top: 20px;">A confirmation email has been sent to your email address.</p>
+        
+        <div class="social-sharing">
+            <a href="https://www.facebook.com/sharer/sharer.php?u=https://yourwebsite.com" class="btn btn-primary" target="_blank">
+                <i class="fab fa-facebook-f"></i> Share on Facebook
+            </a>
+        &nbsp;
+            <a href="https://twitter.com/intent/tweet?text=I%20just%20made%20a%20purchase%20on%20YourWebsite!&url=https://yourwebsite.com" class="btn btn-info" target="_blank">
+                <i class="fab fa-twitter"></i> Share on Twitter
+            </a>
+        </div>
+    </div>
+
+    <!-- Font Awesome for icons -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+</body>
+</html>

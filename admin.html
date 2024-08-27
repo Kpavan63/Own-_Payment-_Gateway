@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton+SC&display=swap" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+        .container {
+            max-width: 1200px;
+        }
+        h1 {
+            text-align: center;
+            font-family: "Anton SC", sans-serif;
+            font-weight: 400;
+            font-style: normal;
+        }
+        .table-container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Panel</h1>
+
+        <div class="table-container">
+            <h2>Orders</h2>
+            <table class="table table-bordered" id="ordersTable">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Orders will be populated here -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-container" id="orderDetailsContainer" style="display: none;">
+            <h2>Order Items</h2>
+            <table class="table table-bordered" id="orderItemsTable">
+                <thead>
+                    <tr>
+                        <th>Item ID</th>
+                        <th>Order ID</th>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Weight</th>
+                        <th>Unit</th>
+                        <th>Quantity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Order items will be populated here -->
+                </tbody>
+            </table>
+
+            <h2>Delivery Details</h2>
+            <table class="table table-bordered" id="deliveryDetailsTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>Address 1</th>
+                        <th>Address 2</th>
+                        <th>Village</th>
+                        <th>Road Name</th>
+                        <th>Pincode</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Delivery details will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Fetch and display orders
+            $.get('/admin/orders', function(orders) {
+                var ordersTableBody = $('#ordersTable tbody');
+                ordersTableBody.empty();
+                orders.forEach(function(order) {
+                    ordersTableBody.append(
+                        `<tr>
+                            <td>${order[0]}</td>
+                            <td>${order[1]}</td>
+                            <td>${order[2]}</td>
+                            <td><button class="btn btn-info" onclick="showOrderDetails(${order[0]})">View Details</button></td>
+                        </tr>`
+                    );
+                });
+            });
+
+            window.showOrderDetails = function(orderId) {
+                // Fetch and display order items
+                $.get(`/admin/order-items/${orderId}`, function(orderItems) {
+                    var orderItemsTableBody = $('#orderItemsTable tbody');
+                    orderItemsTableBody.empty();
+                    orderItems.forEach(function(item) {
+                        orderItemsTableBody.append(
+                            `<tr>
+                                <td>${item[0]}</td>
+                                <td>${item[1]}</td>
+                                <td>${item[2]}</td>
+                                <td>${item[3]}</td>
+                                <td>${item[4]}</td>
+                                <td>${item[5]}</td>
+                                <td>${item[6]}</td>
+                            </tr>`
+                        );
+                    });
+                });
+
+                // Fetch and display delivery details
+                $.get(`/admin/delivery-details/${orderId}`, function(deliveryDetails) {
+                    var deliveryDetailsTableBody = $('#deliveryDetailsTable tbody');
+                    deliveryDetailsTableBody.empty();
+                    deliveryDetailsTableBody.append(
+                        `<tr>
+                            <td>${deliveryDetails[1]}</td>
+                            <td>${deliveryDetails[2]}</td>
+                            <td>${deliveryDetails[3]}</td>
+                            <td>${deliveryDetails[4]}</td>
+                            <td>${deliveryDetails[5]}</td>
+                            <td>${deliveryDetails[6]}</td>
+                            <td>${deliveryDetails[7]}</td>
+                            <td>${deliveryDetails[8]}</td>
+                        </tr>`
+                    );
+                });
+
+                $('#orderDetailsContainer').show();
+            };
+        });
+    </script>
+</body>
+</html>

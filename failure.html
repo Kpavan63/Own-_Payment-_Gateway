@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Failed</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #ff4b2b, #ff416c);
+            color: #fff;
+            text-align: center;
+        }
+        .container {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 100%;
+        }
+        .icon {
+            font-size: 80px;
+            color: #dc3545;
+        }
+        h1 {
+            margin-top: 20px;
+        }
+        p {
+            font-size: 18px;
+        }
+        .btn {
+            margin-top: 20px;
+        }
+        .order-summary {
+            text-align: left;
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .order-summary h2 {
+            font-size: 22px;
+            color: #ffc107;
+        }
+        .order-summary p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">
+            <i class="fa fa-times-circle"></i>
+        </div>
+        <h1>Payment Failed</h1>
+        <p>Unfortunately, your payment could not be processed. Please try again later.</p>
+        <a href="retry-payment.html" class="btn btn-light">Retry Payment</a>
+        <a href="index.html" class="btn btn-dark">Go to Home</a>
+        <a href="contact-support.html" class="btn btn-danger">Contact Support</a>
+        
+        <div class="social-sharing" style="margin-top: 20px;">
+            <a href="https://www.facebook.com/sharer/sharer.php?u=https://yourwebsite.com" class="btn btn-primary" target="_blank">
+                <i class="fab fa-facebook-f"></i> Share on Facebook
+            </a>
+            <a href="https://twitter.com/intent/tweet?text=I%20encountered%20a%20payment%20issue%20on%20YourWebsite!&url=https://yourwebsite.com" class="btn btn-info" target="_blank">
+                <i class="fab fa-twitter"></i> Share on Twitter
+            </a>
+        </div>
+    </div>
+
+    <!-- Font Awesome for icons -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+</body>
+</html>

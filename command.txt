@@ -1,0 +1,2 @@
+curl -k -F "url=https://d4c8-2401-4900-4fc8-7d77-599c-a491-16e-817f.ngrok-free.app/webhook" https://api.telegram.org/bot7433779583:AAG_oeR7L8FB3cgNV1byYYUKgz3z1-8iDcw/setWebhook
+

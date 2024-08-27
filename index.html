@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton+SC&display=swap" rel="stylesheet">
+    <title>Vegetables</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        .cards {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px;
+        }
+        .card {
+            border: 2px solid lightgray;
+            border-radius: 7px;
+            overflow: hidden;
+            transition: transform 0.3s;
+            background-color: white;
+            width: 250px; /* Adjust width of card */
+            margin-bottom: 10px;
+        }
+        .card:hover {
+            transform: scale(1.05);
+        }
+        .card-img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            display: block;
+        }
+        .card-content {
+            padding: 10px;
+            text-align: center;
+        }
+        .order, .cart-btn {
+            display: inline-block;
+            border-radius: 9px;
+            padding: 8px 20px;
+            background-color: rgb(10, 179, 66);
+            color: white;
+            text-decoration: none;
+            margin-top: 10px;
+            transition: transform 0.3s;
+        }
+        .order:hover, .cart-btn:hover {
+            transform: scale(1.05);
+        }
+        .cart {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 300px;
+            max-height: calc(100vh - 100px);
+            background-color: white;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.5);
+            transform: translateX(100%);
+            transition: transform 0.3s;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        .cart.active {
+            transform: translateX(0);
+        }
+        .cart .close-btn {
+            display: block;
+            text-align: right;
+        }
+        .cart .close-btn button {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .cart .cart-items {
+            list-style-type: none;
+            padding: 0;
+        }
+        .cart .cart-items li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .cart .total {
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .popup.active {
+            display: flex;
+        }
+        .popup .popup-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 80%;
+            width: 400px;
+            position: relative; /* Ensure proper positioning */
+        }
+        .popup .popup-content input[type="number"] {
+            width: 100px;
+            text-align: center;
+            margin-left: 5px;
+            margin-right: 5px;
+        }
+        .popup .popup-content .unit-buttons {
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+        }
+        .popup .popup-content .unit-buttons button {
+            margin: 5px;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: rgb(10, 179, 66);
+            color: white;
+        }
+        .popup .popup-content .unit-buttons button.active::after {
+            content: '\2714'; /* Checkmark Unicode character */
+            margin-left: 5px;
+            font-size: 16px;
+        }
+        .optional-weight {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .optional-weight input[type="number"] {
+            width: 100px;
+            text-align: center;
+        }
+        .optional-weight button {
+            background-color: rgb(10, 179, 66);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .success-message {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 128, 0, 0.8);
+            color: white;
+            text-align: center;
+            padding: 10px 60px;
+            z-index: 1000;
+            display: none;
+        }
+        @media screen and (max-width: 768px) {
+            .card {
+                width: calc(50% - 10px); /* Adjust width for smaller screens */
+            }
+            .optional-weight {
+                justify-content: space-between; /* Adjust alignment for smaller screens */
+            }
+            .optional-weight input[type="number"] {
+                width: 60px; /* Adjust width for optional weight input */
+            }
+            .cart {
+                top: 2px;
+                right: 10px;
+                width: 100%;
+                max-width: 300px;
+                transform: translateY(-100%);
+            }
+            .success-message {
+                top: 0;
+                left: 0;
+                width: 100%;
+                transform: none;
+            }
+            .cart-btn {
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                z-index: 1000;
+            }
+        }
+        @media screen and (min-width: 769px) {
+            .cart-btn {
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                z-index: 1000;
+            }
+        }
+        .stars {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            display: flex;
+        }
+        .star {
+            width: 20px;
+            height: 20px;
+            background-color: rgb(255, 115, 0);
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            margin-right: 5px;
+        }
+        .card-content h2{
+            font-family: "Anton SC", sans-serif;
+            font-weight: 400;
+            font-style: normal;
+        }
+        #deliveryFormContainer {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: 20px auto;
+            padding: 20px;
+            display: none;
+        }
+        
+        #deliveryFormContainer h2 {
+            margin-top: 0;
+        }
+        
+        #deliveryForm label {
+            display: block;
+            margin-top: 10px;
+        }
+        
+        #deliveryForm input[type="text"],
+        #deliveryForm input[type="email"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        #submitDelivery {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #28a745;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+        }
+        
+        #submitDelivery:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="cards">
+        <div class="card">
+            <div class="stars">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="orange" class="bi bi-star-fill" viewBox="0 0 16 16">
+                    <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                </svg>&nbsp;<font style="color: rgb(0, 0, 0); margin-top:3px; font-size:17px; font-weight:bold;">4.5</font>
+            </div>
+            <img src="https://img.freepik.com/premium-photo/potatoes-isolated-white-background-with-clipping-path_625448-1013.jpg?w=740" alt="Potato" class="card-img">
+            <div class="card-content">
+                <h2>Potato</h2>
+                <p>KG: 50 Rupees/-</p>
+                <button class="btn order" data-name="Potato" data-price-kg="50" data-price-500g="25" data-price-250g="12.5" data-price-750g="37.5">Order Now</button>
+            </div>
+        </div>
+        <div class="card">
+            <div class="stars">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="orange" class="bi bi-star-fill" viewBox="0 0 16 16">
+                    <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                </svg>&nbsp;<font style="color: rgb(0, 0, 0); margin-top:3px; font-size:17px; font-weight:bold;">4.5</font>
+            </div>
+            <img src="https://img.freepik.com/free-photo/fresh-red-tomatoes_2829-13449.jpg?ga=GA1.1.2033595780.1705061197&semt=sph" alt="Tomato" class="card-img">
+            <div class="card-content">
+                <h2>Tomato</h2>
+                <p>KG: 90 Rupees/-</p>
+                <button class="btn order" data-name="Tomato" data-price-kg="90" data-price-500g="45" data-price-250g="22.5" data-price-750g="67.5">Order Now</button>
+            </div>
+        </div>
+        <div class="card">
+            <div class="stars">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="orange" class="bi bi-star-fill" viewBox="0 0 16 16">
+                    <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                </svg>&nbsp;<font style="color: rgb(0, 0, 0); margin-top:3px; font-size:17px; font-weight:bold;">4.5</font>
+            </div>
+            <img src="https://img.freepik.com/free-photo/green-chili-peppers_2829-14199.jpg?ga=GA1.1.2033595780.1705061197&semt=ais_user" alt="Tomato" class="card-img">
+            <div class="card-content">
+                <h2>GreenChili</h2>
+                <p>KG: 40 Rupees/-</p>
+                <button class="btn order" data-name="Green Chili" data-price-kg="40" data-price-500g="20" data-price-250g="10" data-price-750g="27.5">Order Now</button>
+            </div>
+        </div>
+        <div class="card">
+            <div class="stars">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="orange" class="bi bi-star-fill" viewBox="0 0 16 16">
+                    <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                </svg>&nbsp;<font style="color: rgb(0, 0, 0); margin-top:3px; font-size:17px; font-weight:bold;">4.5</font>
+            </div>
+            <img src="https://img.freepik.com/free-photo/green-lettuce-white-surface_144627-45188.jpg?ga=GA1.1.2033595780.1705061197&semt=sph" alt="Tomato" class="card-img">
+            <div class="card-content">
+                <h2>Cabbage</h2>
+                <p>KG: 50  Rupees/-</p>
+                <button class="btn order" data-name="Cabbage" data-price-kg="50" data-price-500g="25" data-price-250g="12.50" data-price-750g="37.50">Order Now</button>
+            </div>
+        </div>
+        <div class="card">
+            <div class="stars">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="orange" class="bi bi-star-fill" viewBox="0 0 16 16">
+                    <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                </svg>&nbsp;<font style="color: rgb(0, 0, 0); margin-top:3px; font-size:17px; font-weight:bold;">4.5</font>
+            </div>
+            <img src="https://img.freepik.com/free-photo/realistic-image-aubergine-coloured-background_125540-3797.jpg?ga=GA1.1.2033595780.1705061197&semt=sph" alt="Tomato" class="card-img">
+            <div class="card-content">
+                <h2>Brinjal</h2>
+                <p>KG: 60 Rupees/-</p>
+                <button class="btn order" data-name="Brinjal" data-price-kg="60" data-price-500g="30" data-price-250g="15" data-price-750g="45">Order Now</button>
+            </div>
+        </div>
+        <div class="card">
+            <div class="stars">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="orange" class="bi bi-star-fill" viewBox="0 0 16 16">
+                    <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                </svg>&nbsp;<font style="color: rgb(0, 0, 0); margin-top:3px; font-size:17px; font-weight:bold;">4.5</font>
+            </div>
+            <img src="https://img.freepik.com/premium-photo/carrot-bunch-isolated-organic-vegetable-crop-fresh-carrot-bunch-white-background_162695-4486.jpg?ga=GA1.1.2033595780.1705061197&semt=sph" alt="Tomato" class="card-img">
+            <div class="card-content">
+                <h2>Carrot</h2>
+                <p>KG: 50 Rupees/-</p>
+                <button class="btn order" data-name="Carrot" data-price-kg="50" data-price-500g="25" data-price-250g="12.50" data-price-750g="37.50">Order Now</button>
+            </div>
+        </div>
+        <div class="card">
+            <div class="stars">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="orange" class="bi bi-star-fill" viewBox="0 0 16 16">
+                    <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                </svg>&nbsp;<font style="color: rgb(0, 0, 0); margin-top:3px; font-size:17px; font-weight:bold;">4.5</font>
+            </div>
+            <img src="https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcSMkpsip8W6grYLI3mNDzIl73BYpp5VlX1YU95B4SkIMjjt561Dzq7j6m_Q1Efjd6e0tStgPsQjS8AwIxumlB_qWHnhIQgW8siLfXV9AIomm24K8qOWAaiU" alt="Tomato" class="card-img">
+            <div class="card-content">
+                <h2>DrumSticks</h2>
+                <p>KG: 70 Rupees/-</p>
+                <button class="btn order" data-name="Drumsticks" data-price-kg="70" data-price-500g="35" data-price-250g="17.50" data-price-750g="52.50">Order Now</button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="stars">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="orange" class="bi bi-star-fill" viewBox="0 0 16 16">
+                    <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                </svg>&nbsp;<font style="color: rgb(0, 0, 0); margin-top:3px; font-size:17px; font-weight:bold;">4.5</font>
+            </div>
+            <img src="https://img.freepik.com/free-psd/cauliflower-isolated-transparent-background_191095-17069.jpg?ga=GA1.1.2033595780.1705061197&semt=sph" alt="Tomato" class="card-img">
+            <div class="card-content">
+                <h2>Cauliflower</h2>
+                <p>KG: 80 Rupees/-</p>
+                <button class="btn order" data-name="Cauliflower" data-price-kg="80" data-price-500g="40" data-price-250g="20" data-price-750g="60">Order Now</button>
+            </div>
+        </div>
+        <div class="card">
+            <div class="stars">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="orange" class="bi bi-star-fill" viewBox="0 0 16 16">
+                    <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                </svg>&nbsp;<font style="color: rgb(0, 0, 0); margin-top:3px; font-size:17px; font-weight:bold;">4.5</font>
+            </div>
+            <img src="https://img.freepik.com/free-psd/fresh-red-beet-png-isolated-transparent-background_191095-9734.jpg?ga=GA1.1.2033595780.1705061197&semt=sph" alt="Tomato" class="card-img">
+            <div class="card-content">
+                <h2>Beetroot</h2>
+                <p>KG: 50 Rupees/-</p>
+                <button class="btn order" data-name="Beetroot" data-price-kg="50" data-price-500g="25" data-price-250g="12.50" data-price-750g="37.50">Order Now</button>
+            </div>
+        </div>
+        <div class="card">
+            <div class="stars">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="orange" class="bi bi-star-fill" viewBox="0 0 16 16">
+                    <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                </svg>&nbsp;<font style="color: rgb(0, 0, 0); margin-top:3px; font-size:17px; font-weight:bold;">4.5</font>
+            </div>
+            <img src="https://img.freepik.com/free-photo/close-up-photo-fresh-organic-peppers-isolated-white-surface_114579-64433.jpg?ga=GA1.1.2033595780.1705061197&semt=sph" alt="Tomato" class="card-img">
+            <div class="card-content">
+                <h2>Capsicum</h2>
+                <p>KG: 45 Rupees/-</p>
+                <button class="btn order" data-name="Capsicum" data-price-kg="45" data-price-500g="22.50" data-price-250g="11.25" data-price-750g="33.75">Order Now</button>
+            </div>
+        </div>
+        <!-- Repeat for other vegetables -->
+    </div>
+
+    <div id="deliveryFormContainer" style="display: none;">
+        <input type="hidden" id="order-id" value="">
+        <input type="text" id="deliveryName" placeholder="Name">
+        <input type="text" id="deliveryPhone" placeholder="Phone">
+        <input type="email" id="deliveryEmail" placeholder="Email">
+        <input type="text" id="deliveryAddress1" placeholder="Address 1">
+        <input type="text" id="deliveryAddress2" placeholder="Address 2">
+        <input type="text" id="deliveryVillage" placeholder="Village">
+        <input type="text" id="deliveryRoadName" placeholder="Road Name">
+        <input type="text" id="deliveryPincode" placeholder="Pincode">
+        <button id="submitDelivery">Submit Delivery Details</button>
+    </div>
+    
+    
+
+    <div class="cart">
+        <div class="close-btn">
+            <button onclick="toggleCart()">X</button>
+        </div>
+        <h2>Cart</h2>
+        <ul class="cart-items"></ul>
+        <p class="total">Total: 0 Rupees</p>
+        <button class="btn btn-primary" onclick="payNow()">Pay</button>
+    </div>
+
+    <div class="popup" id="weightPopup">
+        <div class="popup-content">
+            <h2>Select Weight for <span id="vegetableName"></span></h2>
+            <div class="unit-buttons">
+                <button onclick="selectWeight('kg')" class="unit-btn">KG</button>
+                <button onclick="selectWeight('500g')" class="unit-btn">500g</button>
+                <button onclick="selectWeight('250g')" class="unit-btn">250g</button>
+                <button onclick="selectWeight('750g')" class="unit-btn">750g</button>
+                <button onclick="closePopup()">X</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="success-message" id="successMessage">
+        Item added to cart successfully!
+    </div>
+
+    <!-- Bootstrap Notification Popup -->
+<div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="statusModalLabel">Order Status</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="modalMessage">
+                <!-- Message will be injected here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--this is popup for amount-->
+<!-- Bootstrap Notification Popup -->
+<div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="statusModalLabel">Order Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modalMessage">
+                <!-- Message will be injected here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+    <button class="cart-btn" onclick="toggleCart()"><svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-cart-check-fill" viewBox="0 0 16 16">
+        <path d="M.5 1a.5.5 0 0 0 0 1h1.11l.401 1.607 1.498 7.985A.5.5 0 0 0 4 12h1a2 2 0 1 0 0 4 2 2 0 0 0 0-4h7a2 2 0 1 0 0 4 2 2 0 0 0 0-4h1a.5.5 0 0 0 .491-.408l1.5-8A.5.5 0 0 0 14.5 3H2.89l-.405-1.621A.5.5 0 0 0 2 1zM6 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0m7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m-1.646-7.646-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L8 8.293l2.646-2.647a.5.5 0 0 1 .708.708"/>
+      </svg></button>
+
+      <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+      <!-- Bootstrap CSS -->
+      <script>
+          var currentVegetable = null;
+          var cartItems = [];
+      
+          // Handle click event for "Order" buttons
+          document.querySelectorAll('.order').forEach(button => {
+              button.addEventListener('click', function() {
+                  var name = this.getAttribute('data-name');
+                  var priceKg = parseFloat(this.getAttribute('data-price-kg'));
+                  var price500g = parseFloat(this.getAttribute('data-price-500g'));
+                  var price250g = parseFloat(this.getAttribute('data-price-250g'));
+                  var price750g = parseFloat(this.getAttribute('data-price-750g'));
+                  openPopup(name, priceKg, price500g, price250g, price750g);
+              });
+          });
+      
+          function openPopup(name, priceKg, price500g, price250g, price750g) {
+              currentVegetable = { name, priceKg, price500g, price250g, price750g, unit: null };
+              document.getElementById('vegetableName').textContent = name;
+              document.getElementById('weightPopup').classList.add('active');
+          }
+      
+          function closePopup() {
+              document.getElementById('weightPopup').classList.remove('active');
+          }
+      
+          function selectWeight(unit) {
+              var price = 0;
+              switch (unit) {
+                  case 'kg':
+                      price = currentVegetable.priceKg;
+                      break;
+                  case '500g':
+                      price = currentVegetable.price500g;
+                      break;
+                  case '250g':
+                      price = currentVegetable.price250g;
+                      break;
+                  case '750g':
+                      price = currentVegetable.price750g;
+                      break;
+              }
+              currentVegetable.unit = unit;
+              currentVegetable.weight = 1; // Assuming weight is 1 for all units for simplicity
+              currentVegetable.price = price;
+              addToCart();
+              closePopup();
+          }
+      
+          function addToCart() {
+              var existingItem = cartItems.find(item => item.name === currentVegetable.name && item.unit === currentVegetable.unit);
+              if (existingItem) {
+                  existingItem.quantity += 1;
+              } else {
+                  currentVegetable.quantity = 1;
+                  cartItems.push(currentVegetable);
+              }
+              updateCart();
+              showSuccessMessage();
+          }
+      
+          function updateCart() {
+              var cartList = document.querySelector('.cart-items');
+              cartList.innerHTML = '';
+              var total = 0;
+              cartItems.forEach(item => {
+                  var listItem = document.createElement('li');
+                  listItem.innerHTML = `
+                      ${item.name} (${item.unit}) - ${item.quantity} x ${item.price} Rupees
+                      <button class="btn btn-danger btn-sm" onclick="removeFromCart('${item.name}', '${item.unit}')">Delete</button>
+                  `;
+                  cartList.appendChild(listItem);
+                  total += item.quantity * item.price;
+              });
+              document.querySelector('.total').textContent = `Total: ${total} Rupees`;
+          }
+      
+          function removeFromCart(name, unit) {
+              cartItems = cartItems.filter(item => !(item.name === name && item.unit === unit));
+              updateCart();
+          }
+      
+          function toggleCart() {
+              document.querySelector('.cart').classList.toggle('active');
+          }
+      
+          function showSuccessMessage() {
+              var message = document.getElementById('successMessage');
+              message.style.display = 'block';
+              setTimeout(function() {
+                  message.style.display = 'none';
+              }, 2000);
+          }
+      
+          function payNow() {
+            var totalAmount = cartItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+        
+            if (totalAmount < 100) {
+                // Show popup for amount less than 200
+                showModal('Order amount is less than 100 Rupees. Please add more items to your cart.');
+                return;
+            }
+            
+            fetch('http://127.0.0.1:3100/process-order', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    items: cartItems,
+                    total: totalAmount,
+                    status: 'waiting'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Order processed:', data);
+                    console.log('Order processed successfully!');
+        
+                    // Show success modal
+                    showModal('Order processed successfully!', '/delivery.html?orderId=' + data.orderId);
+                } else {
+                    console.error('Error:', data.error);
+        
+                    // Show error modal
+                    showModal('Error processing order: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                showModal('Error: ' + error.message);
+            });
+        }
+        
+        function showModal(message, redirectUrl = null) {
+            document.getElementById('modalMessage').innerText = message;
+            $('#statusModal').modal('show');
+        
+            if (redirectUrl) {
+                // Redirect after a short delay
+                setTimeout(() => {
+                    window.location.href = redirectUrl;
+                }, 2000);
+            }
+        }
+        
+      </script>
+      
+    
+</body>
+</html>
